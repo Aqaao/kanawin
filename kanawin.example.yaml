@@ -1,0 +1,18 @@
+# If you don't pass in full configuration file path,
+# kanawin will look for configuration files in current folder.
+# -folder
+#   -kanawin.exe
+#   -kanawin.yaml
+
+# Layer check in order from top to bottom, until match successful.
+# "exe" can be full path or part of full path.
+# Use "*" match all processes(This is not wildcard nor regular), please put it on last.
+# "target_layer" must be exist in kanata config, kanawin can't check its correctness and can't handle error!!!
+# Layer change only occur in the layers defined below. If current kanata's layer is not exist in this file, it won't be changed.
+
+- exe: "C:\\path\\ProjectZomboid\\ProjectZomboid64.exe"
+  target_layer: "game_layer"
+- exe: "firefox.exe"
+  target_layer: "browser_layer"
+- exe: "*"
+  target_layer: "default_layer"
