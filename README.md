@@ -29,7 +29,7 @@ Layer change only occur in the layers defined in config file. If current kanata'
 
 ## Run
 
-First run kanata with TCP sever, pass `-p` flag and port.
+First run kanata with TCP server, pass `-p` flag and port.
 
 ```shell
 kanata.exe -p 1234
