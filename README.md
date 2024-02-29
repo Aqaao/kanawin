@@ -1,7 +1,7 @@
 
 ## Kanawin
 
-This is a plugin for [kanata](https://github.com/jtroo/kanata), automatically change layer by detecting current process.
+This is a plugin for [kanata](https://github.com/jtroo/kanata), automatically change layer by detecting current active window.
 
 - No dependencies required.
 - Windows only.
