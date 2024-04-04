@@ -17,7 +17,6 @@ Layer change only occur in the layers defined in config file. If current kanata'
 # Use "*" match all processes(This is not wildcard nor regular), please put it on last.
 
 # "target_layer" must be exist in kanata config,
-# kanawin can't check its correctness and can't handle error!!!
 
 - exe: "C:\\path\\ProjectZomboid\\ProjectZomboid64.exe"
   target_layer: "game_layer"
@@ -49,3 +48,9 @@ kanawin.exe -p 1234 -c D:/path/kanawin.yaml
 ```
 
 set environment variable ```RUST_LOG="debug"``` get more console information.
+
+## Support table
+|Kanawin|Kanata|
+|-|-|
+|0.1.0|1.0.6 - 1.5.0|
+|0.2.0|1.6.0 - |
