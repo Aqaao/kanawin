@@ -78,17 +78,20 @@ fn check_layer( state: &mut KanawinState,) {
         Some(target_layer) => {
             if state.layer.as_ref().unwrap() != &target_layer{
                 let stream = state.stream.as_mut().unwrap();
-                let request = json!({
+                let request_changelayer = json!({
                     "ChangeLayer": {
                         "new": target_layer,
                     }
                 });
-                if let Err(_)  = stream.write_all(request.to_string().as_bytes()){
+                if let Err(_)  = stream.write_all(request_changelayer.to_string().as_bytes()){
                     log::error!("send ChangeLayer request error!");
                     return;
                 }
-                log::info!("Successfully changed layer: {}",target_layer);
-                state.layer = Some(target_layer.to_owned());
+                let request_layername = json!({
+                    "RequestCurrentLayerName": {}
+                });
+                let _ = stream.write_all(request_layername.to_string().as_bytes());
+                log::debug!("Successfully send changed layer request: {}",target_layer);
             }
             else {
                 log::debug!("Current layer is target layer");
