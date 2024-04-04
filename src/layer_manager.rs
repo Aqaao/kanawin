@@ -5,6 +5,7 @@ use serde_json::json;
 
 use crate::configuration::CONFIG;
 use crate::configuration::LAYERS;
+use crate::configuration::VALID_LAYERS;
 
 pub struct KanawinState {
     pub window:Option<String>,
@@ -57,12 +58,17 @@ fn check_layer( state: &mut KanawinState,) {
         log::warn!("window is not load!");
         return;
     }
+    if VALID_LAYERS.get().is_none() {
+        log::warn!("actual layers not acquired!");
+        return;
+    }
     if !LAYERS.get().unwrap().contains(state.layer.as_ref().unwrap()){
-        log::debug!("current layer is not exist in configuration file");
+        log::debug!("current layers is not exist in configuration file");
         return;
     };
 
-    let mut layer= None;
+
+    let mut layer:Option<&str>= None;
     let configuration = CONFIG.get().unwrap();
     for entry in configuration {
         if state.window.as_ref().unwrap().contains(&entry.exe) {
@@ -76,6 +82,10 @@ fn check_layer( state: &mut KanawinState,) {
     }
     match layer{
         Some(target_layer) => {
+            if !VALID_LAYERS.get().unwrap().contains(&target_layer.to_string()){
+                log::warn!("Failed to change layer, Kanata have not this layer: {target_layer}");
+                return
+            }
             if state.layer.as_ref().unwrap() != &target_layer{
                 let stream = state.stream.as_mut().unwrap();
                 let request_changelayer = json!({

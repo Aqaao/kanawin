@@ -3,7 +3,7 @@ use std::sync::OnceLock;
 use std::ptr;
 use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::winbase::QueryFullProcessImageNameW;
-use winapi::um::winuser::{DispatchMessageW, GetMessageW, GetWindowThreadProcessId, SetWinEventHook, TranslateMessage, EVENT_SYSTEM_FOREGROUND, MSG, WINEVENT_OUTOFCONTEXT};
+use winapi::um::winuser::{DispatchMessageW, GetMessageW, GetWindowThreadProcessId, SetWinEventHook, TranslateMessage, EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_MINIMIZEEND, MSG, WINEVENT_OUTOFCONTEXT};
 use winapi::um::processthreadsapi::OpenProcess;
 use winapi::um::handleapi::CloseHandle;
 use winapi::um::winnt::{PROCESS_QUERY_INFORMATION, PROCESS_VM_READ, LONG};
@@ -25,7 +25,7 @@ pub fn run_windows_monitor(sender:Sender<KanawinState>) {
         // set hook
         let hook = SetWinEventHook(
             EVENT_SYSTEM_FOREGROUND,
-            EVENT_SYSTEM_FOREGROUND,
+            EVENT_SYSTEM_MINIMIZEEND,
             ptr::null_mut(),
             Some(event_callback),
             0,
@@ -76,7 +76,7 @@ unsafe extern "system" fn event_callback(
     _dwms_event_time: u32,
 ) {
     match event {
-        EVENT_SYSTEM_FOREGROUND => {
+        EVENT_SYSTEM_FOREGROUND | EVENT_SYSTEM_MINIMIZEEND => {
             match get_process_path(hwnd){
                 Some(msg) => send_message(msg),
                 None => send_message(String::from("None")),

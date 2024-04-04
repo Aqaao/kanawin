@@ -1,11 +1,13 @@
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Write};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream};
 use std::sync::mpsc::Sender;
 use std::time::Duration;
 use anyhow::Result;
 use json_dotpath::DotPaths;
+use serde_json::json;
 
 use crate::layer_manager::KanawinState;
+use crate::configuration::VALID_LAYERS;
 
 fn connect_to_kanata(port: i32) -> Result<TcpStream> {
     Ok(TcpStream::connect_timeout(
@@ -29,7 +31,7 @@ fn establish_connection(port: i32) -> Result<TcpStream> {
 //run TCP loop
 pub fn run_tcp_client (sender:Sender<KanawinState>,port: i32) -> Result<()> {
     loop {
-        let stream = establish_connection(port)?;
+        let mut stream = establish_connection(port)?;
         //将stream发送给管理线程
         //Send stream to manager thread
         sender.send(KanawinState{
@@ -37,6 +39,12 @@ pub fn run_tcp_client (sender:Sender<KanawinState>,port: i32) -> Result<()> {
             layer:None,
             stream:Some(stream.try_clone()?),
         })?;
+        //请求获取kanata图层名称
+        //get actual layers.
+        let request_layers = json!({
+            "RequestLayerNames": {}
+        });
+        let _ = stream.write_all(request_layers.to_string().as_bytes());
         //检查服务端消息确认当前Layer
         //Read Kanata message to confirm the current Layer
         loop {
@@ -64,6 +72,12 @@ pub fn run_tcp_client (sender:Sender<KanawinState>,port: i32) -> Result<()> {
                                 layer:Some(name),
                                 stream:None,
                             })?;
+                        }
+                    }
+                    else if notification.dot_has("LayerNames.names"){
+                        if let Some(names) = notification.dot_get::<Vec<String>>("LayerNames.names")?{
+                            log::info!("get actual layers: {:}",names.join(","));
+                            let _ = VALID_LAYERS.set(names);
                         }
                     }
                 },

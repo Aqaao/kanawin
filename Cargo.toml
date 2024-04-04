@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4", features = ["derive", "wrap_help"] }
-winapi = { version = "0.3", features = ["winuser", "processthreadsapi", "libloaderapi", "psapi","handleapi","tlhelp32"] }
+winapi = { version = "0.3", features = ["winuser", "processthreadsapi", "libloaderapi", "psapi","handleapi","tlhelp32","winbase","errhandlingapi"] }
 anyhow ={ version = "1.0"}
 log = "0.4"
 env_logger = "0.10"
