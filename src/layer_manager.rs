@@ -5,18 +5,18 @@ use serde_json::json;
 
 use crate::configuration::CONFIG;
 use crate::configuration::LAYERS;
-use crate::configuration::VALID_LAYERS;
 
 pub struct KanawinState {
     pub window:Option<String>,
     pub layer:Option<String>,
     pub stream:Option<TcpStream>,
+    pub layers:Option<Vec<String>>,
 }
 
 //运行层控制循环，接受其他线程的消息，判断是否向 Kanata 发送指令
 //run LayerManager loop, accept messages from other threads, determine whether to send request to Kanata
 pub fn run_layer_manager(receiver:Receiver<KanawinState>, force_mode:bool) {
-    let mut state = KanawinState{window:None, layer:None, stream:None};
+    let mut state = KanawinState{window:None, layer:None, stream:None, layers:None};
     loop {
         //recv 会阻塞线程直到收到新消息
         match receiver.recv() {
@@ -27,13 +27,17 @@ pub fn run_layer_manager(receiver:Receiver<KanawinState>, force_mode:bool) {
                 }
                 if let Some(get_layer) = msg.layer {
                     state.layer = Some(get_layer);
-                    log::debug!("current layer: {}",state.layer.as_ref().unwrap());
+                    log::info!("current layer: {}",state.layer.as_ref().unwrap());
                     if force_mode {check_layer(&mut state);}
                 }
                 if let Some(get_window) = msg.window {
                     state.window = Some(get_window);
                     log::debug!("current window: {}",state.window.as_ref().unwrap());
                     check_layer(&mut state);
+                }
+                if let Some(get_layers) = msg.layers {
+                    state.layers = Some(get_layers);
+                    log::info!("get actual layers: {:}",state.layers.as_ref().unwrap().join(","));
                 }
             },
             Err(_err) => {
@@ -58,7 +62,7 @@ fn check_layer( state: &mut KanawinState,) {
         log::warn!("window is not load!");
         return;
     }
-    if VALID_LAYERS.get().is_none() {
+    if state.layers.is_none() {
         log::warn!("actual layers not acquired!");
         return;
     }
@@ -82,7 +86,7 @@ fn check_layer( state: &mut KanawinState,) {
     }
     match layer{
         Some(target_layer) => {
-            if !VALID_LAYERS.get().unwrap().contains(&target_layer.to_string()){
+            if !state.layers.as_ref().unwrap().contains(&target_layer.to_string()){
                 log::warn!("Failed to change layer, Kanata have not this layer: {target_layer}");
                 return
             }

@@ -10,7 +10,6 @@ pub static CONFIG: OnceLock<Configuration> = OnceLock::new();
 //储存配置中所有的layer，只有在配置中存在的layer才会被改变 
 //Store all layers in configuration, only layers in configuration can be changed
 pub static LAYERS: OnceLock<Layers> = OnceLock::new();
-pub static VALID_LAYERS: OnceLock<Layers> = OnceLock::new();
 
 pub type Layers = Vec<String>;
 pub type Configuration = Vec<Entry>;

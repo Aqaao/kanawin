@@ -60,6 +60,7 @@ fn send_message(msg:String) {
             window:Some(msg),
             layer:None,
             stream:None,
+            layers:None,
         }
     );
 }

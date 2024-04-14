@@ -7,7 +7,6 @@ use json_dotpath::DotPaths;
 use serde_json::json;
 
 use crate::layer_manager::KanawinState;
-use crate::configuration::VALID_LAYERS;
 
 fn connect_to_kanata(port: i32) -> Result<TcpStream> {
     Ok(TcpStream::connect_timeout(
@@ -38,6 +37,7 @@ pub fn run_tcp_client (sender:Sender<KanawinState>,port: i32) -> Result<()> {
             window:None,
             layer:None,
             stream:Some(stream.try_clone()?),
+            layers:None,
         })?;
         //请求获取kanata图层名称
         //get actual layers.
@@ -61,24 +61,35 @@ pub fn run_tcp_client (sender:Sender<KanawinState>,port: i32) -> Result<()> {
                                 window:None,
                                 layer:Some(new),
                                 stream:None,
+                                layers:None,
                             })?;
                         }
                     }
                     else if notification.dot_has("CurrentLayerName.name"){
                         if let Some(name) = notification.dot_get::<String>("CurrentLayerName.name")?{
-                            log::info!("current layer name:{}",&name);
                             sender.send(KanawinState{
                                 window:None,
                                 layer:Some(name),
                                 stream:None,
+                                layers:None,
                             })?;
                         }
                     }
                     else if notification.dot_has("LayerNames.names"){
                         if let Some(names) = notification.dot_get::<Vec<String>>("LayerNames.names")?{
-                            log::info!("get actual layers: {:}",names.join(","));
-                            let _ = VALID_LAYERS.set(names);
+                            sender.send(KanawinState{
+                                window:None,
+                                layer:None,
+                                stream:None,
+                                layers:Some(names),
+                            })?;
                         }
+                    }
+                    else if notification.dot_has("ConfigFileReload.new"){
+                            let request_layers = json!({
+                                "RequestLayerNames": {}
+                            });
+                            let _ = stream.write_all(request_layers.to_string().as_bytes());
                     }
                 },
                 Err(_) => {
